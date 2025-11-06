@@ -92,24 +92,7 @@ Contiene:
 
 ## Implementazione dell'Assegnazione
 
-Gli studenti devono:
-
-1. **Definire i parametri** nel file `protocol.h`:
-   - Numero di porta dell'applicazione
-   - Dimensione dei buffer
-   - Altre costanti necessarie
-
-2. **Implementare le funzioni** necessarie:
-   - Aggiungere i prototipi nel file `protocol.h`
-   - Implementare le funzioni nel file `main.c`
-
-3. **Completare il codice** seguendo le sezioni TODO:
-   - **Client**: creazione socket, connessione al server, invio/ricezione dati
-   - **Server**: creazione socket, bind, listen, accept, gestione client
-
-## Note Importanti
-
-- Utilizzare le costanti definite in `protocol.h` invece di valori hardcoded
+[Protocollo applicativo e istruzioni per la consegna](Assegnazione.md)
 
 ## Licenza
 
