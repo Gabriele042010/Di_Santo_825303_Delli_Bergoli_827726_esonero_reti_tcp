@@ -51,9 +51,9 @@ Il campo `status` può assumere solo questi valori:
 
 Per risposte con successo (status = 0):
 - Temperatura (type = 't'): `Nomecittà: Temperatura = XX.X°C` (1 cifra decimale)
-- Umidità (type = 'h'): `Nomecittà: Umidità = XX%` (nessuna cifra decimale, arrotonda)
-- Vento (type = 'w'): `Nomecittà: Vento = XX km/h` (nessuna cifra decimale, arrotonda)
-- Pressione (type = 'p'): `Nomecittà: Pressione = XXXX hPa` (nessuna cifra decimale, arrotonda)
+- Umidità (type = 'h'): `Nomecittà: Umidità = XX.X%` (1 cifra decimale)
+- Vento (type = 'w'): `Nomecittà: Vento = XX.X km/h` (1 cifra decimale)
+- Pressione (type = 'p'): `Nomecittà: Pressione = XXXX.X hPa` (1 cifra decimale)
 
 Per risposte con errore (status != 0):
 - `Città non disponibile` (status = 1)
@@ -214,4 +214,4 @@ I nomi delle città sono case-insensitive.
 - **Note**:
    - Una sola consegna per coppia
  
-_Ver. 1.0.0_
+_Ver. 1.0.1_
