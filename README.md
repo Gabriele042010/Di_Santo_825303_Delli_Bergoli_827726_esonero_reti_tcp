@@ -92,7 +92,7 @@ Contiene:
 - **Inizializzazione Winsock** su Windows
 - **Sezioni TODO** dove implementare la logica dell'applicazione
 
-## Implementazione dell'Assegnazione
+## Specifiche dell'Assegnazione
 
 [Protocollo applicativo e istruzioni per la consegna](Assegnazione.md)
 
