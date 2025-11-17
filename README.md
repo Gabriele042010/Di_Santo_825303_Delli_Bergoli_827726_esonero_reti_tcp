@@ -74,7 +74,7 @@ Per compilare su Windows, è necessario linkare la libreria Winsock:
 
 ### protocol.h
 Contiene:
-- **Costanti condivise**: numero di porta del server, dimensione buffer, ecc.
+- **Costanti condivise**: numero di porta del server, dimensione del buffer, ecc.
 - **Prototipi delle funzioni**: inserire qui le firme di tutte le funzioni implementate
 
 Esempio:
