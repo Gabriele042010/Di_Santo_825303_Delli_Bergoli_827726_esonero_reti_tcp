@@ -24,17 +24,17 @@
 #include <stdlib.h>
 #include "protocol.h"
 
-#define NO_ERROR 0
-
 void clearwinsock() {
 #if defined WIN32
 	WSACleanup();
 #endif
 }
 
-int main(int argc, char *argv[]) {
+void errorhandler(char *errorMessage) {
+printf ("%s", errorMessage);
+}
 
-	// TODO: Implement server logic
+int main(int argc, char *argv[]) {
 
 #if defined WIN32
 	// Initialize Winsock
@@ -46,33 +46,63 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
-	int my_socket;
 
-	// TODO: Create socket
-	// my_socket = socket(...);
+	int my_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-	// TODO: Configure server address
-	// struct sockaddr_in server_addr;
-	// server_addr.sin_family = AF_INET;
-	// server_addr.sin_port = htons(SERVER_PORT);
-	// server_addr.sin_addr.s_addr = INADDR_ANY;
+	if (my_socket < 0) {
+		errorhandler("socket creation failed.\n");
+		clearwinsock();
+		return -1;
+	}
 
-	// TODO: Bind socket
-	// bind(...);
+	//Assegnazione indirizzo alla socket
+	struct sockaddr_in server_addr;
 
-	// TODO: Set socket to listen
-	// listen(...);
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(SERVER_PORT);
+	server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-	// TODO: Implement connection acceptance loop
-	// while (1) {
-	//     int client_socket = accept(...);
-	//     // Handle client communication
-	//     closesocket(client_socket);
-	// }
+	if (bind(my_socket, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
+		errorhandler("bind() failed.\n");
+		closesocket(my_socket);
+		clearwinsock();
+	return -1;
+	}
+
+	//Socket in ascolto
+	if (listen (my_socket, QUEUE_SIZE) < 0) {
+		errorhandler("listen() failed.\n");
+		closesocket(my_socket);
+		clearwinsock();
+	 return -1;
+	}
+
+	//accettazione nuova connessione
+	struct sockaddr_in cad; //structure for the client address
+	int client_socket; //socket descriptor for the client
+	int client_len; //the size of the client address
+	puts("Waiting for a client to connect...");
+
+	while (1) {
+		client_len = sizeof(cad); //set the size of the client address
+		if ( (client_socket=accept(my_socket, (struct sockaddr *)&cad, &client_len)) < 0 ) {
+			errorhandler("accept() failed.\n");
+			closesocket(client_socket);
+			clearwinsock();
+			return -1;
+		}
+	// clientSocket is connected to a client
+		printf( "Handling client %s\n", inet_ntoa(cad.sin_addr) );
+
+
+
+
+	}// end of the while loop
 
 	printf("Server terminated.\n");
 
 	closesocket(my_socket);
 	clearwinsock();
+
 	return 0;
 } // main end

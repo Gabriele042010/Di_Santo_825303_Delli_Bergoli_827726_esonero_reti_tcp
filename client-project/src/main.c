@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include "protocol.h"
 
-#define NO_ERROR 0
 
 void clearwinsock() {
 #if defined WIN32
@@ -32,9 +31,11 @@ void clearwinsock() {
 #endif
 }
 
-int main(int argc, char *argv[]) {
+void errorhandler(char *error_message) {
+printf("%s",error_message);
+}
 
-	// TODO: Implement client logic
+int main(int argc, char *argv[]) {
 
 #if defined WIN32
 	// Initialize Winsock
@@ -48,25 +49,37 @@ int main(int argc, char *argv[]) {
 
 	int my_socket;
 
-	// TODO: Create socket
-	// my_socket = socket(...);
+	my_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-	// TODO: Configure server address
-	// struct sockaddr_in server_addr;
-	// ...
+	if (my_socket < 0) {
+		errorhandler("socket creation failed.\n");
+		closesocket(my_socket);
+		clearwinsock();
+		return -1;
+	}
 
-	// TODO: Connect to server
-	// connect(...);
+	struct sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); // IP del server
+	server_addr.sin_port = htons(SERVER_PORT); // Server port
 
-	// TODO: Implement communication logic
-	// send(...);
-	// recv(...);
 
-	// TODO: Close socket
-	// closesocket(my_socket);
+	if (connect(my_socket, (struct sockaddr *)&server_addr, sizeof(server_addr))< 0)
+	{
+		errorhandler( "Failed to connect.\n" );
+		closesocket(my_socket);
+		clearwinsock();
+		return -1;
+	}
 
+
+
+
+
+	closesocket(my_socket);
 	printf("Client terminated.\n");
-
 	clearwinsock();
+
 	return 0;
 } // main end

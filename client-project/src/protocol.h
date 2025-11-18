@@ -17,11 +17,8 @@ typedef struct {
     char type;        // Weather data type: 't', 'h', 'w', 'p'
     char city[64];    // City name (null-terminated string)
 } weather_request_t;
+
 // Add here the signatures of the functions implemented by students
 
-/*
- * Example function to implement:
- * int connect_to_server(const char* server_address);
- */
 
 #endif /* PROTOCOL_H_ */
