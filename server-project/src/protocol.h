@@ -14,10 +14,19 @@
 #define QUEUE_SIZE 5       // Size of pending connections queue
 
 // Function prototypes
+typedef struct {
+    unsigned int status;  // Response status code
+    char type;            // Echo of request type
+    float value;          // Weather data value
+} weather_response_t;
 // Add here the signatures of the functions implemented by students
-
+float get_temperature(void);    // Range: -10.0 to 40.0 °C
+float get_humidity(void);       // Range: 20.0 to 100.0 %
+float get_wind(void);           // Range: 0.0 to 100.0 km/h
+float get_pressure(void);       // Range: 950.0 to 1050.0 hPa
 /*
  * Example function to implement:
+
  * int handle_client(int client_socket);
  */
 

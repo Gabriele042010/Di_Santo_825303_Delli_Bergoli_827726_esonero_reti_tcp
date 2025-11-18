@@ -13,6 +13,10 @@
 #define BUFFER_SIZE 512    // Buffer size for messages
 
 // Function prototypes
+typedef struct {
+    char type;        // Weather data type: 't', 'h', 'w', 'p'
+    char city[64];    // City name (null-terminated string)
+} weather_request_t;
 // Add here the signatures of the functions implemented by students
 
 /*
