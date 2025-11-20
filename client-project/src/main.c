@@ -69,13 +69,6 @@ void parse_weather_request(const char *input, weather_request_t *req)
 
 int main(int argc, char *argv[])
 {
-	/* Command line: ./client-project [-s server] [-p port] [-r] "type city"
-	   -s server : optional server address (dotted or hostname)
-	   -p port   : optional server port
-	   -r        : optional flag (if present the next arg may be the request)
-	   If -r is not used, the request can be provided as the final positional arg.
-	*/
-
 	const char *server_str = SERVER_IP;
 	int server_port = SERVER_PORT;
 	const char *request_arg = NULL;
@@ -231,28 +224,28 @@ int main(int argc, char *argv[])
 	{
 	case 0:
 	{
-		printf("Recieved result from server ip %s; %s: ", inet_ntoa(server_addr.sin_addr), req.city);
+		printf("Ricevuto risultato dal server ip %s. %s: ", inet_ntoa(server_addr.sin_addr), req.city);
 
 		switch (res.type)
 		{
 		case 't':
 		{
-			printf("Temperature = %.2f°C \n", res.value);
+			printf("Temperatura = %.2f°C \n", res.value);
 			break;
 		}
 		case 'h':
 		{
-			printf("Umidity = %.2f %% \n", res.value);
+			printf("Umidità = %.2f %% \n", res.value);
 			break;
 		}
 		case 'w':
 		{
-			printf("Wind = %.2f km/h \n", res.value);
+			printf("Vento = %.2f km/h \n", res.value);
 			break;
 		}
 		case 'p':
 		{
-			printf("Pressure = %.2f hPa \n", res.value);
+			printf("Pressione = %.2f hPa \n", res.value);
 			break;
 		}
 		}
@@ -261,15 +254,15 @@ int main(int argc, char *argv[])
 
 	case 1:
 	{
-		printf("Recieved result from server ip %s; ", inet_ntoa(server_addr.sin_addr));
-		errorhandler(" City not available \n");
+		printf("Ricevuto risultato dal server ip %s. ", inet_ntoa(server_addr.sin_addr));
+		errorhandler("Città non disponibile \n");
 		break;
 	}
 
 	case 2:
 	{
-		printf("Recieved result from server ip %s; ", inet_ntoa(server_addr.sin_addr));
-		errorhandler("Request not valid \n");
+		printf("Ricevuto risultato dal server ip %s. ", inet_ntoa(server_addr.sin_addr));
+		errorhandler("Richiesta non valida \n");
 		break;
 	}
 	}

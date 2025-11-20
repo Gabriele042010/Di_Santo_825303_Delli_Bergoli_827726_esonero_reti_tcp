@@ -143,6 +143,31 @@ float get_pressure(void)
 int main(int argc, char *argv[])
 {
 
+	/* Allow optional command line: ./server-project [-p port]
+	   -p port : optional port to listen on (overrides SERVER_PORT)
+	*/
+	int listen_port = SERVER_PORT;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (strcmp(argv[i], "-p") == 0)
+		{
+			if (i + 1 < argc)
+			{
+				listen_port = atoi(argv[++i]);
+				if (listen_port <= 0 || listen_port > 65535)
+				{
+					fprintf(stderr, "Invalid port: %s\n", argv[i]);
+					return 1;
+				}
+				continue;
+			}
+			fprintf(stderr, "Missing value for -p\n");
+			return 1;
+		}
+		/* ignore unknown arguments */
+	}
+
+
 #if defined WIN32
 	SetConsoleOutputCP(CP_UTF8);
 	// Initialize Winsock
@@ -168,7 +193,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in server_addr;
 
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(SERVER_PORT);
+	server_addr.sin_port = htons((unsigned short)listen_port);
 	server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
 	if (bind(my_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
@@ -220,7 +245,7 @@ int main(int argc, char *argv[])
 		}
 		data[bytes_rcvd] = '\0';
 
-		printf("Request \"%s\" from client %s\n", data, inet_ntoa(cad.sin_addr));
+		printf("Richiesta \"%s\" dal client ip %s\n", data, inet_ntoa(cad.sin_addr));
 
 		weather_request_t req;
 		weather_response_t res;
