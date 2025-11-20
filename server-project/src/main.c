@@ -14,10 +14,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <time.h>
 #include "protocol.h"
 
-#include <ctype.h> /* for tolower */
 
 /* Cleanup Winsock on Windows; no-op on POSIX */
 static void clearwinsock(void)
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 	int result = WSAStartup(MAKEWORD(2, 2), &wsa_data);
 	if (result != NO_ERROR)
 	{
-		printf("Error at WSAStartup()\n");
+		errorhandler("Error at WSAStartup() \n");
 		return 0;
 	}
 #endif
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
 	if (my_socket < 0)
 	{
-		errorhandler("socket creation failed.\n");
+		errorhandler("Socket creation failed \n");
 		clearwinsock();
 		return -1;
 	}
@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 		client_len = sizeof(cad); // set the size of the client address
 		if ((client_socket = accept(my_socket, (struct sockaddr *)&cad, &client_len)) < 0)
 		{
-			errorhandler("accept() failed.\n");
+			errorhandler("accept() failed \n");
 			closesocket(client_socket);
 			clearwinsock();
 			return -1;
@@ -213,14 +213,14 @@ int main(int argc, char *argv[])
 		int bytes_rcvd = recv(client_socket, data, BUFFER_SIZE - 1, 0);
 		if (bytes_rcvd <= 0)
 		{
-			errorhandler("recv() failed or connection closed prematurely");
+			errorhandler("recv() failed or connection closed prematurely \n");
 			closesocket(client_socket);
 			clearwinsock();
 			return -1;
 		}
 		data[bytes_rcvd] = '\0';
 
-		printf("Richiesta \"%s\" dal client %s\n", data, inet_ntoa(cad.sin_addr));
+		printf("Request \"%s\" from client %s\n", data, inet_ntoa(cad.sin_addr));
 
 		weather_request_t req;
 		weather_response_t res;
@@ -258,20 +258,6 @@ int main(int argc, char *argv[])
 			}
 			}
 
-			/* Prepare response into a separate buffer to avoid shadowing */
-			char outbuf[BUFFER_SIZE];
-			format_weather_response(&res, outbuf, BUFFER_SIZE);
-
-			int msglen = (int)strlen(outbuf) + 1;
-			int sent = send(client_socket, outbuf, msglen, 0);
-			if (sent < 0 || sent != msglen)
-			{
-				errorhandler("send() failed or sent different number of bytes\n");
-				closesocket(client_socket);
-				clearwinsock();
-				return -1;
-			}
-
 			break;
 		}
 
@@ -287,9 +273,25 @@ int main(int argc, char *argv[])
 		}
 		}
 
+		//printf("\n status: %u ; type: %c ; value: %.2f \n", res.status, res.type, res.value);   //DEBUG
+
+		/* Prepare response into a separate buffer to avoid shadowing */
+		char outbuf[BUFFER_SIZE];
+		format_weather_response(&res, outbuf, BUFFER_SIZE);
+
+		int msglen = (int)strlen(outbuf) + 1;
+		int sent = send(client_socket, outbuf, msglen, 0);
+		if (sent < 0 || sent != msglen)
+		{
+			errorhandler("send() failed or sent different number of bytes \n");
+			closesocket(client_socket);
+			clearwinsock();
+			return -1;
+		}
+
 	}
 
-	printf("Server terminated.\n");
+	printf("Server terminated... \n");
 
 	closesocket(my_socket);
 	clearwinsock();

@@ -23,9 +23,10 @@ void clearwinsock()
 #endif
 }
 
-void errorhandler(char *error_message)
+/* Print error messages to stderr */
+static void errorhandler(const char *errorMessage)
 {
-	printf("%s", error_message);
+	fprintf(stderr, "%s", errorMessage);
 }
 
 int parse_weather_response(const char *input, weather_response_t *resp)
@@ -37,21 +38,7 @@ int parse_weather_response(const char *input, weather_response_t *resp)
 	char t;
 	float v;
 
-	// sscanf analizza 3 elementi: uint, char, float
-	int matched = sscanf(input, "%u %c %f", &s, &t, &v);
-
-	if (matched != 3)
-	{
-		fprintf(stderr, "Errore: stringa non valida: '%s'\n", input);
-		return 1;
-	}
-
-	// Controllo sul type
-	if (t != 't' && t != 'h' && t != 'w' && t != 'p')
-	{
-		fprintf(stderr, "Errore: type '%c' non valido.\n", t);
-		return 1;
-	}
+	sscanf(input, "%u %c %f", &s, &t, &v);
 
 	resp->status = s;
 	resp->type = t;
@@ -85,7 +72,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 3)
 	{
-		fprintf(stderr, "Uso: %s <any> <type city>\n", argv[0]);
+		fprintf(stderr, "Use: %s <any> <type city>\n", argv[0]);
 		return 1;
 	}
 
@@ -96,7 +83,7 @@ int main(int argc, char *argv[])
 	int result = WSAStartup(MAKEWORD(2, 2), &wsa_data);
 	if (result != NO_ERROR)
 	{
-		printf("Error at WSAStartup()\n");
+		errorhandler("Error at WSAStartup() \n");
 		return 0;
 	}
 #endif
@@ -107,7 +94,7 @@ int main(int argc, char *argv[])
 
 	if (my_socket < 0)
 	{
-		errorhandler("socket creation failed.\n");
+		errorhandler("Socket creation failed \n");
 		closesocket(my_socket);
 		clearwinsock();
 		return -1;
@@ -133,7 +120,7 @@ int main(int argc, char *argv[])
 	 int sent = send(my_socket, argv[2], msglen, 0);
 	 if (sent < 0 || sent != msglen)
 	{
-		errorhandler("send() failed or sent different number of bytes\n");
+		errorhandler("send() failed or sent different number of bytes \n");
 		closesocket(my_socket);
 		clearwinsock();
 		return -1;
@@ -144,6 +131,8 @@ int main(int argc, char *argv[])
 	/* Parse the request we sent (argv[2]) for later printing */
 	parse_weather_request(argv[2], &req);
 
+	//printf("\n type: %c ; city: %s \n", req.type, req.city);		//DEBUG
+
 	/* Receive a single null-terminated response from server */
 	int bytes_rcvd;
 	char buf[BUFFER_SIZE];
@@ -152,7 +141,7 @@ int main(int argc, char *argv[])
 	bytes_rcvd = recv(my_socket, buf, BUFFER_SIZE - 1, 0);
 	if (bytes_rcvd <= 0)
 	{
-		errorhandler("recv() failed or connection closed prematurely");
+		errorhandler("recv() failed or connection closed prematurely \n");
 		closesocket(my_socket);
 		clearwinsock();
 		return -1;
@@ -162,32 +151,34 @@ int main(int argc, char *argv[])
 	weather_response_t res;
 	parse_weather_response(buf, &res);
 
+	//printf("\n status: %u ; type: %c ; value: %.2f \n", res.status, res.type, res.value);		//DEBUG
+
 	switch (res.status)
 	{
 	case 0:
 	{
-		printf("Ricevuto risultato dal server ip %s %s: ", inet_ntoa(server_addr.sin_addr), req.city);
+		printf("Recieved result from server ip %s; %s: ", inet_ntoa(server_addr.sin_addr), req.city);
 
 		switch (res.type)
 		{
 		case 't':
 		{
-			printf("Temperatura = %.2f°C \n", res.value);
+			printf("Temperature = %.2f°C \n", res.value);
 			break;
 		}
 		case 'h':
 		{
-			printf("Umidità = %.2f %% \n", res.value);
+			printf("Umidity = %.2f %% \n", res.value);
 			break;
 		}
 		case 'w':
 		{
-			printf("Vento = %.2f km/h \n", res.value);
+			printf("Wind = %.2f km/h \n", res.value);
 			break;
 		}
 		case 'p':
 		{
-			printf("Pressione = %.2f hPa \n", res.value);
+			printf("Pressure = %.2f hPa \n", res.value);
 			break;
 		}
 		}
@@ -196,19 +187,21 @@ int main(int argc, char *argv[])
 
 	case 1:
 	{
-		puts("Città non disponibile");
+		printf("Recieved result from server ip %s; ", inet_ntoa(server_addr.sin_addr));
+		errorhandler(" City not available \n");
 		break;
 	}
 
 	case 2:
 	{
-		puts("Richiesta non valida");
+		printf("Recieved result from server ip %s; ", inet_ntoa(server_addr.sin_addr));
+		errorhandler("Request not valid \n");
 		break;
 	}
 	}
 
 	closesocket(my_socket);
-	printf("Client terminated.\n");
+	puts("Client terminated...");
 	clearwinsock();
 
 	return 0;
