@@ -69,10 +69,68 @@ void parse_weather_request(const char *input, weather_request_t *req)
 
 int main(int argc, char *argv[])
 {
+	/* Command line: ./client-project [-s server] [-p port] [-r] "type city"
+	   -s server : optional server address (dotted or hostname)
+	   -p port   : optional server port
+	   -r        : optional flag (if present the next arg may be the request)
+	   If -r is not used, the request can be provided as the final positional arg.
+	*/
 
-	if (argc < 3)
+	const char *server_str = SERVER_IP;
+	int server_port = SERVER_PORT;
+	const char *request_arg = NULL;
+
+	for (int i = 1; i < argc; ++i)
 	{
-		fprintf(stderr, "Use: %s <any> <type city>\n", argv[0]);
+		if (strcmp(argv[i], "-s") == 0)
+		{
+			if (i + 1 < argc)
+			{
+				server_str = argv[++i];
+				continue;
+			}
+			fprintf(stderr, "Missing value for -s\n");
+			return 1;
+		}
+
+		if (strcmp(argv[i], "-p") == 0)
+		{
+			if (i + 1 < argc)
+			{
+				server_port = atoi(argv[++i]);
+				continue;
+			}
+			fprintf(stderr, "Missing value for -p\n");
+			return 1;
+		}
+
+		if (strcmp(argv[i], "-r") == 0)
+		{
+			if (i + 1 < argc)
+			{
+				request_arg = argv[++i];
+				continue;
+			}
+			fprintf(stderr, "Missing value for -r\n");
+			return 1;
+		}
+
+		if (argv[i][0] != '-' && request_arg == NULL)
+		{
+			request_arg = argv[i];
+			continue;
+		}
+	}
+
+	if (!request_arg)
+	{
+		fprintf(stderr, "Use: %s [-s server] [-p port] [-r] \"type city\"\n", argv[0]);
+		return 1;
+	}
+
+	if (server_port <= 0 || server_port > 65535)
+	{
+		fprintf(stderr, "Invalid port: %d\n", server_port);
 		return 1;
 	}
 
@@ -103,8 +161,25 @@ int main(int argc, char *argv[])
 	struct sockaddr_in server_addr;
 	memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = inet_addr(SERVER_IP); // IP del server
-	server_addr.sin_port = htons(SERVER_PORT);			// Server port
+
+	unsigned long addr = inet_addr(server_str);
+
+	if (addr == INADDR_NONE)
+	{
+		/* try DNS lookup */
+		struct hostent *he = gethostbyname(server_str);
+		if (!he || !he->h_addr_list || !he->h_addr_list[0])
+		{
+			fprintf(stderr, "Unable to resolve host: %s\n", server_str);
+			return 1;
+		}
+		memcpy(&server_addr.sin_addr.s_addr, he->h_addr_list[0], he->h_length);
+	}
+	else
+	{
+		server_addr.sin_addr.s_addr = addr; /* dotted decimal */
+	}
+	server_addr.sin_port = htons((unsigned short)server_port); // Server port
 
 	if (connect(my_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
 	{
@@ -113,11 +188,10 @@ int main(int argc, char *argv[])
 		clearwinsock();
 		return -1;
 	}
-
-	 /* Send the request string (argv[2] contains "<type> <city>")
-		 Use the real length (including terminating null) and check the return value. */
-	 int msglen = (int)strlen(argv[2]) + 1;
-	 int sent = send(my_socket, argv[2], msglen, 0);
+	/* Send the request string (request_arg contains "<type> <city>")
+	   Use the real length (including terminating null) and check the return value. */
+	int msglen = (int)strlen(request_arg) + 1;
+	int sent = send(my_socket, request_arg, msglen, 0);
 	 if (sent < 0 || sent != msglen)
 	{
 		errorhandler("send() failed or sent different number of bytes \n");
@@ -128,8 +202,8 @@ int main(int argc, char *argv[])
 
 	weather_request_t req;
 
-	/* Parse the request we sent (argv[2]) for later printing */
-	parse_weather_request(argv[2], &req);
+	/* Parse the request we sent for later printing */
+	parse_weather_request(request_arg, &req);
 
 	//printf("\n type: %c ; city: %s \n", req.type, req.city);		//DEBUG
 
