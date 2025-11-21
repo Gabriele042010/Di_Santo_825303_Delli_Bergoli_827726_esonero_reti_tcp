@@ -1,6 +1,7 @@
 #if defined WIN32
 #include <winsock.h>
 #include <windows.h>
+typedef int socklen_t;
 #else
 #include <string.h>
 #include <unistd.h>
@@ -215,13 +216,12 @@ int main(int argc, char *argv[])
 
 	// accettazione nuova connessione
 	struct sockaddr_in cad; // structure for the client address
-	int client_socket;		// socket descriptor for the client
-	int client_len;			// the size of the client address
+	int client_socket;		// socket descriptor for the client		// the size of the client address
 	puts("Waiting for a client to connect...");
 
 	while (1)
 	{
-		client_len = sizeof(cad); // set the size of the client address
+		socklen_t client_len = sizeof(cad); // set the size of the client address
 		if ((client_socket = accept(my_socket, (struct sockaddr *)&cad, &client_len)) < 0)
 		{
 			errorhandler("accept() failed \n");
